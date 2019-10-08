@@ -2,14 +2,34 @@
 
 class BareBean extends SugarBean
 {
+    /**
+     * The configured modified date field
+     * @var string|false
+     */
     protected $_modified_date_field = false;
 
+    /**
+     * The configured modified user field
+     * @var string|false
+     */
     protected $_modified_user_field = false;
 
+    /**
+     * The configured created date field
+     * @var string|false
+     */
     protected $_created_date_field = false;
 
+    /**
+     * The configured created user field
+     * @var string|false
+     */
     protected $_created_user_field = false;
 
+    /**
+     * Get the field name where modified date is stored, if in use by Module
+     * @return string|false
+     */
     public function getModifiedDateField()
     {
         if ($this->_modified_date_field !== FALSE){
@@ -21,15 +41,20 @@ class BareBean extends SugarBean
         return FALSE;
     }
 
+    /**
+     * Override the stock setModifiedDate method
+     *  - Check that field is in use by this Module
+     *  - If in use, set the configured field to current time
+     * @inheritdoc
+     **/
     public function setModifiedDate($date = '')
     {
         global $timedate;
 
         $field = $this->getModifiedDateField();
         if ($field !== FALSE){
-            // If the directive to update date_modified is true, or the date_modified
-            // field is empty, set it
-            if ($this->update_date_modified || empty($this->date_modified)) {
+            // This code was duplicated from the stock SugarBean::setModifiedDate
+            if ($this->update_date_modified || empty($this->$field)) {
                 // This only needs to be calculated if it is going to be used
                 if (empty($date)) {
                     $date = $timedate->nowDb();
@@ -40,6 +65,10 @@ class BareBean extends SugarBean
         }
     }
 
+    /**
+     * Get the field name where modified user ID is stored, if in use by Module
+     * @return string|false
+     **/
     public function getModifiedUserField()
     {
         if ($this->_modified_user_field !== FALSE){
@@ -52,7 +81,10 @@ class BareBean extends SugarBean
     }
 
     /**
-     * Sets the modified user on the bean.
+     * Override the stock setModifiedUser Method
+     * - Check that field is in use by this Module
+     * - If in use, set the configured field to user_id
+     * @inheritdoc
      * @param User|null $user [description]
      */
     public function setModifiedUser(User $user = null)
@@ -78,6 +110,10 @@ class BareBean extends SugarBean
         }
     }
 
+    /**
+     * Get the field name where created date is stored, if in use by Module
+     * @return string|false
+     */
     public function getCreatedDateField()
     {
         if ($this->_created_date_field !== FALSE){
@@ -89,6 +125,10 @@ class BareBean extends SugarBean
         return FALSE;
     }
 
+    /**
+     * Get the field name where created user ID is stored, if in use by Module
+     * @return string|false
+     */
     public function getCreatedUserField()
     {
         if ($this->_created_user_field !== FALSE){
@@ -101,7 +141,8 @@ class BareBean extends SugarBean
     }
 
     /**
-     * Set Created Date, Created User, and ID
+     * Override the stock setCreateData method
+     * - Code was duplicated from stock, to accommodate not having created date or created user fields
      * @inheritdoc
      */
     public function setCreateData($isUpdate, User $user = null)
@@ -111,6 +152,7 @@ class BareBean extends SugarBean
 
             $field = $this->getCreatedDateField();
             if ($field !== FALSE){
+                //Duplicated from SugarBean::setCreateData with modifications for dynamic field name
                 if (empty($this->$field)) {
                     $this->$field = $this->getDateModified();
                 }
@@ -123,6 +165,7 @@ class BareBean extends SugarBean
 
             $field = $this->getCreatedUserField();
             if ($field !== FALSE){
+                //Duplicated from SugarBean::setCreateData with modifications for dynamic field name
                 if ($this->set_created_by == true) {
                     // created by should always be this user
                     // unless it was set outside of the bean
@@ -142,7 +185,7 @@ class BareBean extends SugarBean
 
     /**
      * Get the Date Modified fields value
-     * @return bool|mixed
+     * @return mixed|false
      */
     public function getDateModified()
     {
@@ -155,7 +198,7 @@ class BareBean extends SugarBean
 
     /**
      * Get the Date Created Fields value
-     * @return bool|mixed
+     * @return mixed|false
      */
     public function getDateCreated()
     {
