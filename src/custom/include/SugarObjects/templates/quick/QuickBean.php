@@ -1,7 +1,8 @@
 <?php
 
 require_once 'custom/include/SugarObjects/templates/bare/BareBean.php';
-require_once 'custom/include/SugarObjects/templates/quick/traits/QuickSave.php';
+
+use \Sugarcrm\Sugarcrm\custom\SugarObjects\Traits\QuickSave;
 
 class QuickBean extends BareBean
 {
@@ -9,8 +10,15 @@ class QuickBean extends BareBean
         getQuickSaveFields as vardefQuickSavFields;
     }
 
+    /**
+     * @var array
+     */
     protected $quickSaveFields = array();
 
+    /**
+     * Get the Quick Save fields
+     * @return array
+     */
     protected function getQuickSaveFields()
     {
         $fields = $this->vardefQuickSavFields();

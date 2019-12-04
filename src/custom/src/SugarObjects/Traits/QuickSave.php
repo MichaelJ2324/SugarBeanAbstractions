@@ -1,9 +1,12 @@
 <?php
 
+namespace \Sugarcrm\Sugarcrm\custom\SugarObjects\Traits;
+
 trait QuickSave
 {
     /**
      * Retrieve an array of the fields and their values (or parameters) for QuickSave query
+     * @return array
      */
     protected function getQuickSaveFields()
     {
