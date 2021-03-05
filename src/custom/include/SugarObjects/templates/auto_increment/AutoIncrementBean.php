@@ -4,29 +4,67 @@ require_once 'custom/include/SugarObjects/templates/bare/BareBean.php';
 
 class AutoIncrementBean extends BareBean
 {
-    public $new_with_id = true;
     public $id = null;
 
     /**
-     * @inheritdoc
+     * If not an Update set ID to null, since it autoincrements
+     * @param bool $isUpdate
+     * @param User|null $user
      */
-    public function save($check_notify = false)
+    public function setCreateData($isUpdate, User $user = null)
     {
-        $this->ensureId();
-        return parent::save($check_notify);
+        parent::setCreateData($isUpdate, $user);
+        if(!$isUpdate){
+            if (!empty($this->id) && $this->new_with_id){
+                $nextId = $this->getNextId();
+                if ($this->id === $nextId){
+                    return;
+                }
+            }
+            $this->id = null;
+        }
     }
 
     /**
-     * Unset ID and configure $new_with_id property
+     * Remove ID field if requesting auto_increment properties (as done by loadAutoIncrementValues()
+     * @inheritDoc
      */
-    protected function ensureId()
+    public function getFieldDefinitions(?string $property = null, array $filter = array()) : array
     {
-        if (!$this->isUpdate()){
-            $this->id = null;
-            $this->new_with_id = true;
-        } else {
-            $this->new_with_id = false;
+        $definitions = parent::getFieldDefinitions($property,$filter);
+        if ($property == 'auto_increment'){
+            foreach ($definitions as $i => $field) {
+                if ($field['name'] == 'id'){
+                    unset($definitions[$i]);
+                    break;
+                }
+            }
         }
+        return $definitions;
+    }
+
+    /**
+     * Set ID to Last ID
+     */
+    protected function loadAutoIncrementValues()
+    {
+        $this->id = $this->getLastId();
+
+        parent::loadAutoIncrementValues();
+    }
+
+    /**
+     * Retrieve the next ID in line
+     * - Random wait time incurred, to make parallel duplicate requests differ
+     */
+    public function getLastId()
+    {
+        $conn = $this->db->getConnection();
+
+        $qb = $conn->createQueryBuilder();
+        $qb->select("MAX(id)");
+        $qb->from($this->table_name);
+        return $qb->execute()->fetchColumn();
     }
 
     /**
@@ -35,19 +73,17 @@ class AutoIncrementBean extends BareBean
      */
     public function getNextId()
     {
-        $conn = $this->db->getConnection();
-
-        $qb = $conn->createQueryBuilder();
-        $qb->select(array('MAX(id)'));
-        $qb->from($this->table_name);
-
         $this->wait();
-        return $qb->execute()->fetchColumn();
+        return $this->getLastId()+1;
     }
 
+    /**
+     * Randomize cycles
+     */
     private function wait()
     {
-        $count = mt_rand(1,100);
+        $count = mt_rand(100,100000);
+        $count = intval(round(($count/100)));
         $x = 0;
         while($x <= $count){
             $x++;

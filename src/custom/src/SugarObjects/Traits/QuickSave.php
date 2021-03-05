@@ -29,7 +29,7 @@ trait QuickSave
 
         $conn = $this->db->getConnection();
         $qb = $conn->createQueryBuilder();
-        
+
         $fields = $this->getQuickSaveFields();
 
         $field = $this->getModifiedDateField();
@@ -87,8 +87,12 @@ trait QuickSave
         }
         try{
             if ($count > 0){
-                // _ppl($query->getSql());
-                // _ppl($query->getParameters());
+                if ($this->logQuickSave()){
+                    $logger = \Sugarcrm\Sugarcrm\Logger\Factory::getLogger('quick_save');
+                    $logger->debug("Quick Save SQL: ".
+                        vsprintf(str_replace("?","%s",$query->getSql()),
+                            array_walk($query->getParameters(),array($this->db,'quoted'))));
+                }
                 $result = $query->execute();
                 $this->call_custom_logic('after_quicksave',array(
                     'isUpdate' => $isUpdate,
@@ -98,6 +102,20 @@ trait QuickSave
             }
         }catch(\Exception $ex){
             $GLOBALS['log']->fatal("Exception occurred quick-saving record: ".$ex->getMessage());
+            $logger = \Sugarcrm\Sugarcrm\Logger\Factory::getLogger('quick_save');
+            $logger->debug($ex->getTraceAsString());
+        }
+        return false;
+    }
+
+    /**
+     * Check if quick_save channel is even configured
+     * @return bool
+     */
+    private function logQuickSave()
+    {
+        if (isset($sugar_config['logger']['channels']['quick_save'])){
+            return true;
         }
         return false;
     }
