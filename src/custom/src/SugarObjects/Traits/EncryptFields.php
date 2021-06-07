@@ -12,7 +12,7 @@ trait EncryptFields
     protected $encfields;
 
     /**
-     * PLain text encrypted fields
+     * Plain text encrypted fields
      * @var array
      */
     protected $encfields_plain;

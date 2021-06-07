@@ -1,6 +1,6 @@
 <?php
 
-namespace \Sugarcrm\Sugarcrm\custom\SugarObjects\Traits;
+namespace Sugarcrm\Sugarcrm\custom\SugarObjects\Traits;
 
 trait QuickSave
 {
@@ -29,7 +29,7 @@ trait QuickSave
 
         $conn = $this->db->getConnection();
         $qb = $conn->createQueryBuilder();
-
+        
         $fields = $this->getQuickSaveFields();
 
         $field = $this->getModifiedDateField();
@@ -49,8 +49,12 @@ trait QuickSave
             foreach($fields as $field => $param)
             {
                 if (isset($this->$field)){
+                    $value = $this->$field;
+                    if ($value === true || $value === false){
+                        $value = intval($value);
+                    }
                     $query->set($field,$param)
-                        ->setParameter($count, $this->$field);
+                        ->setParameter($count, $value);
                     $count++;
                 }
             }
@@ -81,7 +85,11 @@ trait QuickSave
             $count = 0;
             foreach($validFields as $field => $param)
             {
-                $query->setParameter($count, $this->$field);
+                $value = $this->$field;
+                if ($value === true || $value === false){
+                    $value = intval($value);
+                }
+                $query->setParameter($count, $value);
                 $count++;
             }
         }

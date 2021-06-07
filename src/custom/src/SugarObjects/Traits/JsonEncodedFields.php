@@ -12,7 +12,7 @@ trait JsonEncodedFields
      */
     public function isJsonString($value)
     {
-        return preg_match("(^[\{].*[\}]$)|(^[\[].*[\]]$)", $value);
+        return preg_match("/(^[\{].*[\}]$)|(^[\[].*[\]]$)/", $value);
     }
 
     /**
@@ -26,6 +26,7 @@ trait JsonEncodedFields
                 $value = json_encode($value);
             }
             $this->$field = $value;
+            $this->setFieldAsEncoded($field,'json');
         }
     }
 
@@ -37,6 +38,7 @@ trait JsonEncodedFields
         if ($this->fieldEncoded($field)) {
             if ($this->isJsonString($this->$field)){
                 $this->$field = json_decode($this->$field,true);
+                $this->unsetFieldAsEncoded($field);
             }
         }
     }

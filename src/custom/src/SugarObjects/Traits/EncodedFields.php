@@ -9,20 +9,26 @@ trait EncodedFields
 
     /**
      * @param $field
+     * @param $encoding
      */
-    public function setFieldAsEncoded($field)
+    public function setFieldAsEncoded($field,$encoding = true)
     {
-        $this->_encoded_fields[$field] = true;
+        $this->_encoded_fields[$field] = $encoding;
     }
 
     /**
      *
      * @param $field
+     * @param $encoding
      * @return bool
      */
-    public function fieldEncoded($field)
+    public function fieldEncoded($field,$encoding = null)
     {
-        return array_key_exists($field,$this->_encoded_fields);
+        $encoded = array_key_exists($field,$this->_encoded_fields);
+        if ($encoded && $encoding){
+            return $this->_encoded_fields[$field] == $encoding;
+        }
+        return $encoded;
     }
 
     /**
